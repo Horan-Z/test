@@ -4,8 +4,8 @@ metadata:
   kuboard_spray_version:
     min: v1.2.4
   available_at:
-    - www.github.com
-    - www.gitee.com
+    - github.com
+    - gitee.com
   issue_date: "2023-2-19"
   owner: "shaohq@foxmail.com"
   can_upgrade_from:
