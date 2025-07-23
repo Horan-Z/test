@@ -1,6 +1,6 @@
 kind: KuboardSprayResourcePackageList
 items:
-  - version: 测试
+  - version: test
     hidden: true
     kuboard_spray_version:
       min: v1.2.4
