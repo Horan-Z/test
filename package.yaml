@@ -1,5 +1,5 @@
 metadata:
-  version: 测试
+  version: test
   type: kubernetes-offline-resource
   kuboard_spray_version:
     min: v1.2.4
