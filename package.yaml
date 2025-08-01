@@ -365,4 +365,4 @@ metadata:
         - "8.7"
         - "9.1"
   type: pangee-cluster-resource-package
-  version: pangee-cluster-1.28.7_v1
+  version: test
