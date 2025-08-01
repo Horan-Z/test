@@ -1,7 +1,7 @@
 name: Update Resource List
 
-# 触发条件：推送分支或删除分支
 on:
+  workflow_dispatch:
   push:
     branches-ignore:
       - 'main'    # 忽略main分支
