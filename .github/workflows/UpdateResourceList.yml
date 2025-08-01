@@ -72,7 +72,7 @@ jobs:
                   # 创建资源条目
                   resource = {
                       'version': metadata.get('version', branch),  # 默认为分支名
-                      'hidden': False,  # 默认不隐藏
+                      'hidden': True,  # 默认隐藏
                       'kuboard_spray_version': metadata.get('kuboard_spray_version', {})
                   }
                   
