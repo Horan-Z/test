@@ -15,6 +15,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # 拉取所有分支历史
+          
+      - name: Fetch all branches
+        run: |
+          git fetch --all  # 获取所有远程分支信息
 
       - name: Set up Python
         uses: actions/setup-python@v4
