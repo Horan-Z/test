@@ -2,6 +2,7 @@ name: Update Resource List
 
 on:
   workflow_dispatch:
+  delete:
   push:
     branches-ignore:
       - 'main'
