@@ -6,10 +6,6 @@ on:
     branches-ignore:
       - 'main'    # 忽略main分支
       - 'list'    # 忽略list分支本身
-  delete:
-    branches-ignore:
-      - 'main'    # 忽略main分支
-      - 'list'    # 忽略list分支本身
 
 jobs:
   update-list:
