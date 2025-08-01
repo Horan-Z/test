@@ -43,7 +43,7 @@ jobs:
 
           # 获取所有本地分支
           result = subprocess.run(
-              ['git', 'branch', '--format', '%(refname:short)'],
+              ['git', 'branch', '--format=%(refname:short)'],
               capture_output=True, text=True
           )
           all_branches = result.stdout.strip().split('\n')
