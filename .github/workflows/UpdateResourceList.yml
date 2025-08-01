@@ -50,6 +50,7 @@ jobs:
               ['git', 'branch', '--format=%(refname:short)'],
               capture_output=True, text=True
           )
+          print(f"标准输出:\n{result.stdout}")
           all_branches = result.stdout.strip().split('\n')
 
           # 过滤掉排除的分支
