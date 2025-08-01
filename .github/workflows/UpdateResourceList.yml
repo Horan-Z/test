@@ -43,7 +43,7 @@ jobs:
 
           # 获取所有分支
           command = "git ls-remote --heads origin | sed 's/.*refs\/heads\///'"
-          result = subprocess.run(command, capture_output=True, text=True)
+          result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
           all_branches = result.stdout.strip().split('\n')
 
