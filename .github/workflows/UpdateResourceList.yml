@@ -104,6 +104,6 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add resources.yaml
+          git add .
           git commit -m "Refresh resource list" || exit 0
           git push origin list
