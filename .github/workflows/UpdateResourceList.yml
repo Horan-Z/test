@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 拉取所有分支历史
 
       - name: Fetch all remote branches
         run: |
-          git branch -r  # 打印所有远程分支
+          git fetch origin --prune
 
       - name: Set up Python
         uses: actions/setup-python@v4
