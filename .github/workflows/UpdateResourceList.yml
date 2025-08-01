@@ -1,0 +1,108 @@
+name: Update Resource List
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'main'
+      - 'list'
+
+jobs:
+  update-list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Checkout list branch
+        run: |
+          git checkout list || git checkout -b list
+
+      - name: Generate full resource list
+        run: |
+          import os
+          import yaml
+          import subprocess
+          from pathlib import Path
+
+          # 配置
+          LIST_FILE = 'package-list.yaml'
+          EXCLUDED_BRANCHES = {'main', 'list'}
+
+          # 获取所有分支
+          command = "git ls-remote --heads origin | sed 's/.*refs\/heads\///'"
+          result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+          all_branches = result.stdout.strip().split('\n')
+
+          # 过滤掉排除的分支
+          resource_branches = [b for b in all_branches if b not in EXCLUDED_BRANCHES and b]
+
+          # 收集所有资源信息
+          resources = []
+          for branch in resource_branches:
+              try:
+                  # 切换到当前分支
+                  subprocess.run(['git', 'checkout', branch], capture_output=True, check=True)
+
+                  # 检查package.yaml是否存在
+                  if not Path('package.yaml').exists():
+                      print(f"Warning: package.yaml not found in branch {branch}, skipping")
+                      continue
+
+                  # 读取package.yaml
+                  with open('package.yaml', 'r') as f:
+                      package_data = yaml.safe_load(f) or {}
+
+                  # 提取metadata信息
+                  metadata = package_data.get('metadata', {})
+
+                  # 创建资源条目
+                  resource = {
+                      'version': metadata.get('version', branch),  # 默认为分支名
+                      'hidden': True,
+                      'kuboard_spray_version': metadata.get('kuboard_spray_version', {})
+                  }
+
+                  resources.append(resource)
+                  print(f"Added resource from branch: {branch}")
+
+              except Exception as e:
+                  print(f"Error processing branch {branch}: {str(e)}, skipping")
+                  continue
+
+          # 切换回list分支准备更新
+          subprocess.run(['git', 'checkout', 'list'], capture_output=True, check=True)
+
+          # 创建完整的资源列表结构
+          resource_list = {
+              'kind': 'pangee-cluster-resource-package-list',
+              'items': resources
+          }
+
+          # 保存更新后的列表
+          with open(LIST_FILE, 'w') as f:
+              yaml.safe_dump(resource_list, f, sort_keys=False)
+
+          print(f"Generated resource list with {len(resources)} items")
+        shell: python
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Refresh resource list" || exit 0
+          git push origin list
