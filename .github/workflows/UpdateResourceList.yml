@@ -14,11 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取所有分支历史
-
-      - name: Fetch all remote branches
-        run: |
-          git fetch origin --prune
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -45,12 +41,10 @@ jobs:
           LIST_FILE = 'package-list.yaml'  # 你的YAML文件名
           EXCLUDED_BRANCHES = {'main', 'list'}  # 排除的分支
 
-          # 获取所有本地分支
-          result = subprocess.run(
-              ['git', 'branch', '--format=%(refname:short)'],
-              capture_output=True, text=True
-          )
-          print(f"标准输出:\n{result.stdout}")
+          # 获取所有分支
+          command = "git ls-remote --heads origin | sed 's/.*refs\/heads\///'"
+          result = subprocess.run(command, capture_output=True, text=True)
+
           all_branches = result.stdout.strip().split('\n')
 
           # 过滤掉排除的分支
