@@ -16,6 +16,10 @@ jobs:
         with:
           fetch-depth: 0  # 拉取所有分支历史
 
+      - name: Fetch all remote branches
+        run: |
+          git branch -r  # 打印所有远程分支
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
