@@ -1,6 +1,2 @@
 kind: pangee-cluster-resource-package-list
-items:
-- version: test
-  hidden: true
-  kuboard_spray_version:
-    min: v1.2.4
+items: []
