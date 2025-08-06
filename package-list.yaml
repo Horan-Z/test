@@ -4,3 +4,7 @@ items:
   hidden: true
   kuboard_spray_version:
     min: v1.2.4
+- version: test2
+  hidden: true
+  kuboard_spray_version:
+    min: v1.2.4
