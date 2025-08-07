@@ -68,7 +68,7 @@ data:
             en: Install Harbor
   dependency:
     - name: kubernetes
-      version: 1.26.1
+      version: 1.28.15
       category: kubernetes
       artifact:
         type: "tarball"
@@ -366,4 +366,4 @@ metadata:
         - "8.7"
         - "9.1"
   type: pangee-cluster-resource-package
-  version: pangee-cluster-1.26.1_v1
+  version: pangee-cluster-1.28.15_v1
