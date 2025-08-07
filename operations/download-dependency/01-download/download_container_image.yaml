@@ -23,7 +23,7 @@
 
 - name: Pull Container Image --platform (with proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
+    CONTAINERD_TIMEOUT=300 nerdctl pull --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
   environment:
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ https_proxy }}"
@@ -35,7 +35,7 @@
 
 - name: Pull Container Image --platform (no proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
+    CONTAINERD_TIMEOUT=300 nerdctl pull --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
   retries: "{{ default_retries }}"
   when: 
     - item.artifact.pull_all_platforms | default(false) == false
@@ -43,7 +43,7 @@
 
 - name: Pull Container Image --all-platforms (with proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --all-platforms {{ artifact_image_tag }}
+    CONTAINERD_TIMEOUT=300 nerdctl pull --all-platforms {{ artifact_image_tag }}
   environment:
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ https_proxy }}"
@@ -55,7 +55,7 @@
 
 - name: Pull Container Image --all-platforms (no proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --all-platforms {{ artifact_image_tag }}
+    CONTAINERD_TIMEOUT=300 nerdctl pull --all-platforms {{ artifact_image_tag }}
   retries: "{{ default_retries }}"
   when: 
     - item.artifact.pull_all_platforms | default(false) == true
