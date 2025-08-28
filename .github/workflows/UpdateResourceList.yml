@@ -3,7 +3,7 @@ name: Update Resource List
 on:
   workflow_dispatch:  # 手动触发
   release:
-    types: [created, edited, deleted, published, unpublished]  # 当release发生任何变动时触发
+    types: [edited, deleted, published, unpublished]  # 当release发生变动时触发
 
 jobs:
   update-list:
