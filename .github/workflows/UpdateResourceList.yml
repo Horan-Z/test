@@ -1,12 +1,9 @@
 name: Update Resource List
 
 on:
-  workflow_dispatch:
-  delete:
-  push:
-    branches-ignore:
-      - 'main'
-      - 'list'
+  workflow_dispatch:  # 手动触发
+  release:
+    types: [created, edited, deleted, published, unpublished]  # 当release发生任何变动时触发
 
 jobs:
   update-list:
@@ -25,63 +22,116 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyyaml
+          pip install pyyaml requests
 
       - name: Checkout list branch
         run: |
           git checkout list || git checkout -b list
 
-      - name: Generate full resource list
+      - name: Generate resource list from releases
         run: |
           import os
           import yaml
           import subprocess
+          import requests
           from pathlib import Path
 
           # 配置
           LIST_FILE = 'package-list.yaml'
-          EXCLUDED_BRANCHES = {'main', 'list'}
+          # 从环境变量获取仓库信息
+          repo_full = os.environ.get('GITHUB_REPOSITORY')
+          if not repo_full:
+              raise ValueError("GITHUB_REPOSITORY environment variable not set")
+              
+          parts = repo_full.split('/')
+          if len(parts) != 2:
+              raise ValueError(f"Invalid repository format: {repo_full}")
+              
+          REPO_OWNER, REPO_NAME = parts
+          
+          GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+          if not GITHUB_TOKEN:
+              raise ValueError("GITHUB_TOKEN environment variable not set")
 
-          # 获取所有分支
-          command = "git ls-remote --heads origin | sed 's/.*refs\/heads\///'"
-          result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-          all_branches = result.stdout.strip().split('\n')
-
-          # 过滤掉排除的分支
-          resource_branches = [b for b in all_branches if b not in EXCLUDED_BRANCHES and b]
+          # 获取所有release
+          def get_all_releases():
+              releases = []
+              url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases?per_page=100"
+              
+              headers = {
+                  "Authorization": f"token {GITHUB_TOKEN}",
+                  "Accept": "application/vnd.github.v3+json"
+              }
+              
+              while url:
+                  response = requests.get(url, headers=headers)
+                  response.raise_for_status()
+                  releases.extend(response.json())
+                  
+                  # 处理分页
+                  links = response.headers.get('link', '')
+                  url = None
+                  for link in links.split(','):
+                      if 'rel="next"' in link:
+                          url = link.split(';')[0].strip('<>')
+                          break
+              
+              return releases
 
           # 收集所有资源信息
           resources = []
-          for branch in resource_branches:
+          
+          # 只处理releases
+          print("Processing releases...")
+          releases = get_all_releases()
+          for release in releases:
               try:
-                  # 切换到当前分支
-                  subprocess.run(['git', 'checkout', branch], capture_output=True, check=True)
-
-                  # 检查package.yaml是否存在
-                  if not Path('package.yaml').exists():
-                      print(f"Warning: package.yaml not found in branch {branch}, skipping")
+                  # 跳过草稿版本
+                  if release.get('draft', False):
+                      print(f"Skipping draft release: {release.get('tag_name')}")
                       continue
-
-                  # 读取package.yaml
-                  with open('package.yaml', 'r') as f:
-                      package_data = yaml.safe_load(f) or {}
-
-                  # 提取metadata信息
-                  metadata = package_data.get('metadata', {})
-
-                  # 创建资源条目
-                  resource = {
-                      'version': metadata.get('version', branch),  # 默认为分支名
-                      'hidden': True,
-                      'kuboard_spray_version': metadata.get('kuboard_spray_version', {})
-                  }
-
-                  resources.append(resource)
-                  print(f"Added resource from branch: {branch}")
-
+                  
+                  # 跳过预发布版本
+                  if release.get('prerelease', False):
+                      print(f"Skipping prerelease: {release.get('tag_name')}")
+                      continue
+                  
+                  tag_name = release['tag_name']
+                  branch = release.get('target_commitish', 'main')
+                  
+                  print(f"Processing release: {tag_name} (branch: {branch})")
+                  
+                  # 检查release中是否有package.yaml
+                  found = False
+                  for asset in release.get('assets', []):
+                      if asset['name'] == 'package.yaml':
+                          # 下载package.yaml
+                          response = requests.get(asset['browser_download_url'])
+                          response.raise_for_status()
+                          
+                          # 解析package.yaml
+                          package_data = yaml.safe_load(response.text) or {}
+                          
+                          # 提取metadata信息
+                          metadata = package_data.get('metadata', {})
+                          
+                          # 创建资源条目
+                          resource = {
+                              'version': metadata.get('version', tag_name),
+                              'hidden': False,
+                              'kuboard_spray_version': metadata.get('kuboard_spray_version', {})
+                          }
+                          
+                          resources.append(resource)
+                          found = True
+                          print(f"Added resource from release: {tag_name}")
+                          break
+                  
+                  if not found:
+                      print(f"Warning: package.yaml not found in release {tag_name}, skipping")
+              
               except Exception as e:
-                  print(f"Error processing branch {branch}: {str(e)}, skipping")
+                  print(f"Error processing release {release.get('tag_name')}: {str(e)}, skipping")
                   continue
 
           # 切换回list分支准备更新
@@ -99,11 +149,13 @@ jobs:
 
           print(f"Generated resource list with {len(resources)} items")
         shell: python
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 提供GitHub API访问令牌
 
       - name: Commit and push changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add .
-          git commit -m "Refresh resource list" || exit 0
+          git commit -m "Refresh resource list from releases" || exit 0
           git push origin list
