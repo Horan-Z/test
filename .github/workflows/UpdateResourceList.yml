@@ -101,8 +101,11 @@ jobs:
                   
                   print(f"Processing release: {tag_name} (branch: {branch})")
                   
-                  # 检查release中是否有package.yaml
-                  found = False
+                  # 检查release中是否有package.yaml和zip文件
+                  package_yaml_found = False
+                  zip_download_url = None
+                  
+                  # 遍历所有资产，寻找package.yaml和zip文件
                   for asset in release.get('assets', []):
                       if asset['name'] == 'package.yaml':
                           # 下载package.yaml
@@ -111,24 +114,34 @@ jobs:
                           
                           # 解析package.yaml
                           package_data = yaml.safe_load(response.text) or {}
+                          package_yaml_found = True
                           
-                          # 提取metadata信息
-                          metadata = package_data.get('metadata', {})
-                          
-                          # 创建资源条目
-                          resource = {
-                              'version': metadata.get('version', tag_name),
-                              'hidden': False,
-                              'kuboard_spray_version': metadata.get('kuboard_spray_version', {})
-                          }
-                          
-                          resources.append(resource)
-                          found = True
-                          print(f"Added resource from release: {tag_name}")
-                          break
+                      # 查找zip文件
+                      if asset['name'].endswith('.zip'):
+                          zip_download_url = asset['browser_download_url']
                   
-                  if not found:
+                  # 确保找到了package.yaml和zip文件
+                  if not package_yaml_found:
                       print(f"Warning: package.yaml not found in release {tag_name}, skipping")
+                      continue
+                  
+                  if not zip_download_url:
+                      print(f"Warning: zip file not found in release {tag_name}, skipping")
+                      continue
+                  
+                  # 提取metadata信息
+                  metadata = package_data.get('metadata', {})
+                  
+                  # 创建资源条目，包含zip文件下载地址
+                  resource = {
+                      'version': metadata.get('version', tag_name),
+                      'hidden': False,
+                      'kuboard_spray_version': metadata.get('kuboard_spray_version', {}),
+                      'download_url': zip_download_url  # 添加zip文件的下载地址
+                  }
+                  
+                  resources.append(resource)
+                  print(f"Added resource from release: {tag_name} with zip URL: {zip_download_url}")
               
               except Exception as e:
                   print(f"Error processing release {release.get('tag_name')}: {str(e)}, skipping")
