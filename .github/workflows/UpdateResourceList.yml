@@ -97,13 +97,12 @@ jobs:
                       continue
                   
                   tag_name = release['tag_name']
-                  branch = release.get('target_commitish', 'main')
                   
-                  print(f"Processing release: {tag_name} (branch: {branch})")
+                  print(f"Processing release: {tag_name}")
                   
                   # 检查release中是否有package.yaml和zip文件
                   package_yaml_found = False
-                  zip_download_url = None
+                  zip_file_name = None
                   
                   # 遍历所有资产，寻找package.yaml和zip文件
                   for asset in release.get('assets', []):
@@ -118,30 +117,30 @@ jobs:
                           
                       # 查找zip文件
                       if asset['name'].endswith('.zip'):
-                          zip_download_url = asset['browser_download_url']
+                          zip_file_name = asset['name']
                   
                   # 确保找到了package.yaml和zip文件
                   if not package_yaml_found:
                       print(f"Warning: package.yaml not found in release {tag_name}, skipping")
                       continue
                   
-                  if not zip_download_url:
+                  if not zip_file_name:
                       print(f"Warning: zip file not found in release {tag_name}, skipping")
                       continue
                   
                   # 提取metadata信息
                   metadata = package_data.get('metadata', {})
                   
-                  # 创建资源条目，包含zip文件下载地址
+                  # 创建资源条目，组合tag名和文件名
                   resource = {
                       'version': metadata.get('version', tag_name),
                       'hidden': False,
                       'pangee_cluster_version': metadata.get('pangee_cluster_version', {}),
-                      'download_url': zip_download_url  # 添加zip文件的下载地址
+                      'file_path': f"{tag_name}/{zip_file_name}"  # 直接组合tag名和文件名
                   }
                   
                   resources.append(resource)
-                  print(f"Added resource from release: {tag_name} with zip URL: {zip_download_url}")
+                  print(f"Added resource from release: {tag_name} with path: {tag_name}/{zip_file_name}")
               
               except Exception as e:
                   print(f"Error processing release {release.get('tag_name')}: {str(e)}, skipping")
