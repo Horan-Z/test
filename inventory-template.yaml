@@ -20,6 +20,7 @@ all:
         kube_apiserver_vip_port: 6443 # haproxy代理apiserver安全端口，如果使用F5，F5需要提前配置好listen 1181 后端 6443
         kube_apiserver_port: 6443
         root_dir: /k8s1.28
+        use_versioning_dir_layout: true
         cri_containerd_insecure_registries: [] # 完成安装后，应该自动设置 containerd 的对应参数
         harbor_extra_hosts: [] # 配置在harbor容器中以及k8s节点上额外的域名解析地址，格式为"域名:IP地址"，可为空列表
         ntp_server:

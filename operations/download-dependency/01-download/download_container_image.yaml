@@ -21,49 +21,67 @@
     artifact_file_path_temp: "{{ temp_directory }}/{{ artifact_file_name }}"
     artifact_file_path_target: "{{ target_directory }}/{{ artifact_file_name }}.gz"
 
-- name: Pull Container Image --platform (with proxy)
+- name: Copy container image using skopeo (with proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
-  environment:
-    http_proxy: "{{ http_proxy }}"
-    https_proxy: "{{ https_proxy }}"
-    no_proxy: "{{ additional_no_proxy }}"
-  retries: "{{ default_retries }}"
-  when:
-    - item.artifact.pull_all_platforms | default(false) == false
-    - enable_proxy | default(false) == true
-
-- name: Pull Container Image --platform (no proxy)
-  ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
-  retries: "{{ default_retries }}"
-  when: 
-    - item.artifact.pull_all_platforms | default(false) == false
-    - enable_proxy | default(false) == false
-
-- name: Pull Container Image --all-platforms (with proxy)
-  ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --all-platforms {{ artifact_image_tag }}
+    skopeo --override-os {{ os }} --override-arch {{ arch }} copy docker://{{ artifact_image_tag }} docker-archive:{{ artifact_file_path_target }} --dest-compress --dest-compress-format=gzip
   environment:
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ https_proxy }}"
     no_proxy: "{{ additional_no_proxy }}"
   retries: "{{ default_retries }}"
   when: 
-    - item.artifact.pull_all_platforms | default(false) == true
     - enable_proxy | default(false) == true
 
-- name: Pull Container Image --all-platforms (no proxy)
+- name: Copy container image using skopeo (no proxy)
   ansible.builtin.shell: |
-    nerdctl pull --timeout 300 --all-platforms {{ artifact_image_tag }}
+    skopeo --override-os {{ os }} --override-arch {{ arch }} copy docker://{{ artifact_image_tag }} docker-archive:{{ artifact_file_path_target }} --dest-compress --dest-compress-format=gzip
   retries: "{{ default_retries }}"
   when: 
-    - item.artifact.pull_all_platforms | default(false) == true
     - enable_proxy | default(false) == false
 
-- name: Export Container Image
-  ansible.builtin.shell: |
-    nerdctl save --platform {{ os }}/{{ arch }} --output {{ artifact_file_path_temp }} {{ artifact_image_tag }}
-    gzip {{ artifact_file_path_temp }}
-    mv {{ artifact_file_path_temp }}.gz {{ artifact_file_path_target }}
-  retries: 0
+# - name: Pull Container Image --platform (with proxy)
+#   ansible.builtin.shell: |
+#     nerdctl pull --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
+#   environment:
+#     http_proxy: "{{ http_proxy }}"
+#     https_proxy: "{{ https_proxy }}"
+#     no_proxy: "{{ additional_no_proxy }}"
+#   retries: "{{ default_retries }}"
+#   when: 
+#     - item.artifact.pull_all_platforms | default(false) == false
+#     - enable_proxy | default(false) == true
+
+# - name: Pull Container Image --platform (no proxy)
+#   ansible.builtin.shell: |
+#     nerdctl pull --platform {{ os }}/{{ arch }} {{ artifact_image_tag }}
+#   retries: "{{ default_retries }}"
+#   when: 
+#     - item.artifact.pull_all_platforms | default(false) == false
+#     - enable_proxy | default(false) == false
+
+# - name: Pull Container Image --all-platforms (with proxy)
+#   ansible.builtin.shell: |
+#     nerdctl pull --all-platforms {{ artifact_image_tag }}
+#   environment:
+#     http_proxy: "{{ http_proxy }}"
+#     https_proxy: "{{ https_proxy }}"
+#     no_proxy: "{{ additional_no_proxy }}"
+#   retries: "{{ default_retries }}"
+#   when: 
+#     - item.artifact.pull_all_platforms | default(false) == true
+#     - enable_proxy | default(false) == true
+
+# - name: Pull Container Image --all-platforms (no proxy)
+#   ansible.builtin.shell: |
+#     nerdctl pull --all-platforms {{ artifact_image_tag }}
+#   retries: "{{ default_retries }}"
+#   when: 
+#     - item.artifact.pull_all_platforms | default(false) == true
+#     - enable_proxy | default(false) == false
+
+# - name: Export Container Image
+#   ansible.builtin.shell: |
+#     nerdctl save --platform {{ os }}/{{ arch }} --output {{ artifact_file_path_temp }} {{ artifact_image_tag }}
+#     gzip {{ artifact_file_path_temp }}
+#     mv {{ artifact_file_path_temp }}.gz {{ artifact_file_path_target }}
+#   retries: 0

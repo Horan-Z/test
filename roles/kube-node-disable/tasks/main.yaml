@@ -1,0 +1,6 @@
+- name: Install
+  shell: "{{ item }}"
+  loop: "{{ start_command }}"
+  loop_control:
+    label: "{{ item }}"
+  when: start_command is defined

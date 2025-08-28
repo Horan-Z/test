@@ -11,6 +11,7 @@
 - name: Caculate Download Url
   set_fact:
     artifact_download_url: "{{ item.artifact.url[os+'_'+arch] | default(item.artifact.url.default) | replace('${arch}', arch) | replace('${os}', os) | replace('${version}', item.version) }}"
+    artifact_checksum: "{{ item.artifact.checksum[os+'_'+arch] | replace('${arch}', arch) | replace('${os}', os) | replace('${version}', item.version) }}"
 
 - name: Calculate Artifact File Name
   set_fact:
@@ -24,7 +25,7 @@
   get_url:
     url: "{{ artifact_download_url }}"
     dest: "{{ temp_directory }}/{{ artifact_file_name_temp }}"
-    checksum: "{{ item.artifact.checksum[os+'_'+arch] }}"
+    checksum: "{{ artifact_checksum }}"
     use_proxy: yes
   environment:
     http_proxy: "{{ http_proxy }}"
@@ -37,7 +38,7 @@
   get_url:
     url: "{{ artifact_download_url }}"
     dest: "{{ temp_directory }}/{{ artifact_file_name_temp }}"
-    checksum: "{{ item.artifact.checksum[os+'_'+arch] }}"
+    checksum: "{{ artifact_checksum }}"
     use_proxy: no
   retries: "{{ default_retries }}"
   when: enable_proxy | default(false) == false

@@ -1,0 +1,14 @@
+start_command:
+  - systemctl stop kubelet
+  - systemctl disable kubelet
+  - systemctl stop kube-proxy
+  - systemctl disable kube-proxy
+  - nerdctl -n k8s.io ps | grep calico-node | awk '{print $1}' | xargs -r nerdctl -n k8s.io stop
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl stop kube-apiserver{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl disable kube-apiserver{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl stop kube-controller-manager{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl disable kube-controller-manager{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl stop kube-scheduler{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && systemctl disable kube-scheduler{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && nerdctl ps -a | grep kube-keepalived && nerdctl stop kube-keepalived && nerdctl rm kube-keepalived || true{% endif %}
+  - true{% if inventory_hostname in groups['kube_control_plane'] %} && nerdctl ps -a | grep kube-haproxy && nerdctl stop kube-haproxy && nerdctl rm kube-haproxy || true{% endif %}

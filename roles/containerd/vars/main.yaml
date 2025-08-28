@@ -1,0 +1,25 @@
+dir_list:
+  - { path: "{{ root_dir }}/config/containerd",  mode: "0755" }
+
+copy_list:
+  - { src: "{{ cache_dir }}/containerd/containerd",               dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/containerd/containerd-shim",          dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/containerd/containerd-shim-runc-v2",  dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/containerd/ctr",                      dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/runc",                                dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/nerdctl/nerdctl",                     dest: "{{ root_dir }}/usr/bin",                 mode: "0755" }
+  - { src: "{{ cache_dir }}/pause.tar.gz",                        dest: "/tmp" }
+
+templates:
+  - { src: "config.toml", dest: "{{ root_dir }}/config/containerd/config.toml",  mode: "0644" }
+  - { src: "containerd.service", dest: "{{ root_dir }}/service",  mode: "0644" }
+
+start_command:
+  - ln -sf {{ root_dir }}/service/*.service /etc/systemd/system/
+  - systemctl daemon-reload
+  - systemctl enable containerd
+  - systemctl restart containerd
+  - nerdctl -n k8s.io load -i /tmp/pause.tar.gz && rm -f /tmp/pause.tar.gz
+
+check_app:
+  - systemctl status containerd
