@@ -1,13 +1,2 @@
 kind: pangee-cluster-resource-package-list
-items:
-- version: pangee-cluster-1.33.15_v1
-  hidden: false
-  pangee_cluster_version:
-    min: v1.2.4
-  tag_name: v3
-  file_name: test-test.zip
-- version: pangee-cluster-1.28.15_v1
-  hidden: false
-  pangee_cluster_version: {}
-  tag_name: v2
-  file_name: test-test.zip
+items: []
