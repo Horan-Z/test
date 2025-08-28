@@ -98,7 +98,7 @@ jobs:
                   
                   tag_name = release['tag_name']
                   
-                  package_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/raw/{tag_name}/package.yaml"
+                  package_url = f"https://raw.githubusercontent.com/Horan-Z/test/{tag_name}/package.yaml"
                   
                   zip_file_name = None
                   
