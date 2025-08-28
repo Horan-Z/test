@@ -136,7 +136,8 @@ jobs:
                       'version': metadata.get('version', tag_name),
                       'hidden': False,
                       'pangee_cluster_version': metadata.get('pangee_cluster_version', {}),
-                      'file_path': f"{tag_name}/{zip_file_name}"  # 直接组合tag名和文件名
+                      'tag_name': tag_name
+                      'file_name': zip_file_name
                   }
                   
                   resources.append(resource)
