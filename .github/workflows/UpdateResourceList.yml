@@ -136,7 +136,7 @@ jobs:
                   resource = {
                       'version': metadata.get('version', tag_name),
                       'hidden': False,
-                      'kuboard_spray_version': metadata.get('kuboard_spray_version', {}),
+                      'pangee_cluster_version': metadata.get('pangee_cluster_version', {}),
                       'download_url': zip_download_url  # 添加zip文件的下载地址
                   }
                   
