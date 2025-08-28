@@ -97,7 +97,7 @@ jobs:
                       continue
                   
                   tag_name = release['tag_name']
-                  
+                  #TODO: 修改链接
                   package_url = f"https://raw.githubusercontent.com/Horan-Z/test/{tag_name}/package.yaml"
                   
                   zip_file_name = None
