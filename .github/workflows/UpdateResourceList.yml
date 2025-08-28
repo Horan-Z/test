@@ -98,26 +98,21 @@ jobs:
                   
                   tag_name = release['tag_name']
                   
-                  print(f"Processing release: {tag_name}")
+                  package_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/raw/{tag_name}/package.yaml"
                   
-                  # 检查release中是否有package.yaml和zip文件
-                  package_yaml_found = False
                   zip_file_name = None
                   
-                  # 遍历所有资产，寻找package.yaml和zip文件
+                  # 遍历所有资产，寻找zip文件
                   for asset in release.get('assets', []):
-                      if asset['name'] == 'package.yaml':
-                          # 下载package.yaml
-                          response = requests.get(asset['browser_download_url'])
-                          response.raise_for_status()
-                          
-                          # 解析package.yaml
-                          package_data = yaml.safe_load(response.text) or {}
-                          package_yaml_found = True
-                          
                       # 查找zip文件
                       if asset['name'].endswith('.zip'):
                           zip_file_name = asset['name']
+                          # 下载package.yaml
+                          response = requests.get(package_url)
+                          response.raise_for_status()
+                          # 解析package.yaml
+                          package_data = yaml.safe_load(response.text) or {}
+                          package_yaml_found = True
                   
                   # 确保找到了package.yaml和zip文件
                   if not package_yaml_found:
