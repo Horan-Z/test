@@ -104,7 +104,7 @@ jobs:
                       continue
                   
                   # 提取zip文件名
-                  zip_file_name = zip_download_url.split('/')[-1]
+                  zip_file_name = zip_download_url.split('/')[-1] + '.zip'
                   
                   # 获取package.yaml的URL
                   package_url = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}/{tag_name}/package.yaml"
